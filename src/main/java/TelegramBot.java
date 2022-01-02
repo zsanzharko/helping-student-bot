@@ -1,5 +1,6 @@
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -11,22 +12,32 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return System.getenv("SDU_Helping_Student_Bot").substring(0, System.getenv("SDU_Helping_Student_Bot").indexOf(';'));
+        return System.getenv("SDU_Helping_Student_Bot")
+                .substring(0, System.getenv("SDU_Helping_Student_Bot").indexOf(';'));
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        String text = update.getMessage().getText();
+        if (update.hasMessage()) {
+            if (update.getMessage().hasText()) {
+                final String TEXT = update.getMessage().getText();
+                final String CHAT_ID = update.getMessage().getChatId().toString();
+                final Long ID = update.getMessage().getForwardFrom().getId();
 
-        SendMessage message = new SendMessage();
-        message.setText(text);
-        message.setChatId(update.getMessage().getChatId().toString());
+                switch (TEXT) {
+                    case "/start" -> {
 
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+                    }
+                    case "/stop" -> {
+
+                    }
+                    case "/information" -> {
+
+                    }
+                }
+
+            }
+
         }
-
     }
 }
