@@ -9,12 +9,11 @@ import java.util.Objects;
 
 public class Authorization {
 
-    public static Account authLogPerson(Long ID, String chatId, String username, String name, String surname) {
-        int index = Account.binary_search(Account.getAccountList(), ID);
-        if (index != -1)
-            return Account.getAccountList().get(index);
-        addAccount(new Account(ID, chatId, username, name, surname));
-        return Account.getAccountList().get(Account.getAccountList().size() - 1);
+    public static void authLogPerson(Long ID, String chatId, String username, String name, String surname) {
+        int index = Account.binary_search(Account.getAccountList(), ID);    //find the index
+        if (index == -1)
+            addAccount(new Account(ID, chatId, username, name, surname));   // if we not found index in array, we add new Account
+        else Account.getAccountList().get(Account.getAccountList().size() - 1).getUser().setActive(true);
     }
 
     public static Account authLogPerson(Long ID, String chatId) {
@@ -36,6 +35,7 @@ public class Authorization {
     /**
      * I use selection sort in this method.
      * Big O(n^2)
+     *
      * @param account new account when we have to add in account List
      */
     private static void addAccount(Account account) {
@@ -47,7 +47,7 @@ public class Authorization {
             int smallest_index = 0;
             Account smallest_account = Account.getAccountList().get(smallest_index);
             for (int j = 1; j < Account.getAccountList().size(); j++) {
-                if(Account.getAccountList().get(j).getID() < smallest_account.getID()) {
+                if (Account.getAccountList().get(j).getID() < smallest_account.getID()) {
                     smallest_account = Account.getAccountList().get(j);
                     smallest_index = j;
                 }

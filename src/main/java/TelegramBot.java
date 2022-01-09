@@ -22,6 +22,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        Account account;
+
         if (update.hasMessage()) {
             final String CHAT_ID = update.getMessage().getChatId().toString();
 
@@ -32,16 +34,21 @@ public class TelegramBot extends TelegramLongPollingBot {
                     update.getMessage().getForwardFrom().getUserName() :
                     "null";
 
-            Account account = Authorization.authLogPerson(ID, CHAT_ID, username, first_name, last_name);
 
             if (update.getMessage().hasText()) {
                 final String TEXT = update.getMessage().getText();
 
                 if (TEXT.charAt(0) == '/') {
+                    if (TEXT.equals("/start")) {
+                        //todo next time do like this
+                        // connect to database and find this user
+                        // if db will find, you can import personal data to this bot
+                        // else you will authorized with this method
+                        Authorization.authLogPerson(ID, CHAT_ID, username, first_name, last_name);
+                        return;
+                    }
+                    account = Account.getAccountList().get(Account.binary_search(Account.getAccountList(), ID));
                     switch (TEXT) {
-                        case "/start" -> {
-
-                        }
                         case "/stop" -> {
                             //todo realize removing in list with database
                             // or remove only in telegram, and when user will come back
