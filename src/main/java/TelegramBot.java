@@ -1,9 +1,12 @@
+import account.Account;
+import auth.Authorization;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.*;
-import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import security.Authorization;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TelegramBot extends TelegramLongPollingBot {
     @Override
@@ -19,13 +22,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        SendMessage sendMessage = null;
-        SendPhoto sendPhoto = null;
-        SendAudio sendAudio = null;
-        SendAnimation sendAnimation = null;
-        SendContact sendContact = null;
-        SendDocument sendDocument = null;
-
         if (update.hasMessage()) {
             final String CHAT_ID = update.getMessage().getChatId().toString();
 
@@ -36,7 +32,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     update.getMessage().getForwardFrom().getUserName() :
                     "null";
 
-            Authorization.checkUser(first_name, last_name, ID, username);
+            Account account = Authorization.authLogPerson(ID, CHAT_ID, username, first_name, last_name);
 
             if (update.getMessage().hasText()) {
                 final String TEXT = update.getMessage().getText();
@@ -47,27 +43,80 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                         }
                         case "/stop" -> {
-
+                            //todo realize removing in list with database
+                            // or remove only in telegram, and when user will come back
+                            // ur get account in database;
+                            Account.getAccountList().remove(account);
                         }
                         case "/information" -> {
-
+                            SendMessage information_message = new SendMessage();
+                            information_message.setChatId(CHAT_ID);
+                            information_message.setText("""
+                                    Привет! Я бот в котором ты сможешь почуствовать себя анонимом среди университетов
+                                    В мои обязанности входит исключительная безопастность и сокрытие данных от третьих
+                                    лиц. На данный момент доступны функции:
+                                        /start - данные начинают собираться (в целях автоматизировать ecosystem'у ботов)
+                                        /stop - данные удаляются из активных участников (остаються в базе данных до окончания вашей учебы) \s
+                                        /information - предоставляет возможности бота, о которых вы могли бы забыть\s
+                                        /getconnection - показывает подключение между студентов без личных информаций
+                                        /helpers - просмотр постов помощи
+                                        /account
+                                    """);
+                            try {
+                                execute(information_message);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        case "/account" -> {
+                            SendMessage accountInformationMessage = new SendMessage();
+                            accountInformationMessage.setChatId(CHAT_ID);
+                            accountInformationMessage.setText(
+                                    Account.getAccountInformation(account)
+                            );
+                            accountInformationMessage.setReplyMarkup(
+                                    SendMessages.two_columns_markup(
+                                            List.of(new String[]{"Edit", "Remove Message"}),
+                                            List.of(new String[]{"/edit_account", "/remove_edit_account_message"})));
+                            try {
+                                //todo save id message when user want to delete message
+                                execute(accountInformationMessage);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        case "/getconnection" -> {
+                            final String connectionInformation = account.getUser().getConnectionAccountListInformation();
+                            SendMessage informationConnectionMessage = new SendMessage();
+                            informationConnectionMessage.setText(connectionInformation);
+                            informationConnectionMessage.setChatId(CHAT_ID);
+                            informationConnectionMessage.setReplyMarkup(
+                                    SendMessages.two_columns_markup(
+                                            List.of(new String[]{"Connect to", "Remove connect"}),
+                                            List.of(new String[]{"/connect_to", "/remove_connect"})));
+                        }
+                        case "/helpers" -> {
+                            String text = """
+                                    What u are want to do?
+                                    """;
+                            SendMessage help_choice_message = new SendMessage();
+                            help_choice_message.setText(text);
+                            help_choice_message.setChatId(CHAT_ID);
+                            help_choice_message.setReplyMarkup(
+                                    SendMessages.two_columns_markup(
+                                            List.of(new String[]{"Create", "Remove", "View Post"}),
+                                            List.of(new String[]{"/create_post", "/remove_posts", "/view_posts"})
+                                    )
+                            );
+                            try {
+                                execute(help_choice_message);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                    return;
                 }
-
             }
-
-        }
-        try {
-            if (sendMessage != null) execute(sendMessage);
-            if (sendAudio != null) execute(sendAudio);
-            if (sendAnimation != null) execute(sendAnimation);
-            if (sendContact != null) execute(sendContact);
-            if (sendPhoto != null) execute(sendPhoto);
-            if (sendDocument != null) execute(sendDocument);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
         }
     }
 }
