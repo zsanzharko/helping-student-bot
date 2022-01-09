@@ -13,17 +13,22 @@ public class AccountActivity {
     private SendAudio latestAudio;
     private DeleteMessage deleteMessage;
 
+    private Long latestConnection = null;
+
     private Integer latestMessageId;
 
     public AccountActivity() {}
 
-    public AccountActivity(SendMessage latestMessage,
-                           SendPhoto latestPhoto, SendDocument latestDocument,
-                           SendAnimation latestAnimation, SendAudio latestAudio) {
+    public AccountActivity(SendMessage latestMessage, SendPhoto latestPhoto, SendDocument latestDocument,
+                           SendAnimation latestAnimation, SendAudio latestAudio, DeleteMessage deleteMessage,
+                           Long latestConnection, Integer latestMessageId) {
         this.latestMessage = latestMessage;
         this.latestPhoto = latestPhoto;
         this.latestDocument = latestDocument;
         this.latestAnimation = latestAnimation;
         this.latestAudio = latestAudio;
+        this.deleteMessage = deleteMessage;
+        this.latestConnection = latestConnection;
+        this.latestMessageId = latestMessageId;
     }
 }

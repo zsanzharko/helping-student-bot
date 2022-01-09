@@ -5,6 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,14 +60,12 @@ public class User {
     }
 
     /**
-     * @apiNote
-     * This method catching accounts in connection list.
+     * @return Accounts with fake username in STRING.
+     * @apiNote This method catching accounts in connection list.
      * If list wil empty, method will return string with text.
      * Next time we got all IDs in {@link #connectionAccountList}, and will searching
      * in {@link #getConnectionAccountList()} index.
      * Remember if user remove by self, search will get -1
-     *
-     * @return Accounts with fake username in STRING.
      */
     public final String getConnectionAccountListInformation() {
         if (connectionAccountList.size() == 0) return "Your connection is empty...";
@@ -87,5 +86,52 @@ public class User {
             if (i != connectionAccountList.size() - 1) connectionList.append("\n");
         }
         return connectionList.toString();
+    }
+
+    public boolean setInfoEdit(String command, String item) {
+        switch (command) {
+            case "/edit_account_name" -> name = item;
+            case "/edit_account_surname" -> surname = item;
+            case "/edit_account_birthday" -> {
+                if (item.length() != 10) return false;
+                // dd/mm/yyyy
+                int day = Integer.parseInt(item.substring(0, item.indexOf('/')));
+                int month = Integer.parseInt(item.substring(item.indexOf('/') + 1, item.lastIndexOf('/')));
+                int year = Integer.parseInt(item.substring(item.lastIndexOf('/') + 1));
+                birthday = LocalDate.of(year, month, day);
+            }
+            case "/edit_account_phone_number" -> {
+                // 87470148206
+                // +77470148206
+                if (item.length() < 11 || item.length() > 12) return false;
+                //fixme do checking number
+                numberPhone = item;
+            }
+            case "/edit_account_email" -> {
+                //fixme do checking email
+                email = item;
+            }
+            case "/edit_account_payment_card" -> {
+                //fixme do checking card number
+                payment.setCard(item);
+            }
+            case "/edit_account_student_id" -> {
+                if (User.studentIDChecking(item))
+                    setStudentID(item);
+                else return false;
+            }
+            case "/edit_account_fake_username" -> {
+                for (int i = 0; i < Account.getAccountList().size(); i++) {
+                    Account account = Account.getAccountList().get(i);
+                    if (account.getUser().getFakeUsername() != null || !Objects.equals(account.getUser().getFakeUsername(), "")) {
+                        if (account.getUser().getFakeUsername().equals(item)) {
+                            return false;
+                        }
+                    }
+                }
+                fakeUsername = item;
+            }
+        }
+        return true;
     }
 }

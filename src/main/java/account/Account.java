@@ -75,20 +75,6 @@ public final class Account {
                 "student ID: " + getUser().getStudentID() + "\n";
     }
 
-    public boolean setInfoEdit(String command, String text) {
-        text = text.trim();
-        switch (command) {
-            case "/edit_account_name" -> getUser().setName(text);
-            case "/edit_account_surname" -> getUser().setSurname(text);
-            case "/edit_account_student_id" -> {
-                if (User.studentIDChecking(text))
-                    getUser().setStudentID(text);
-                else return false;
-            }
-        }
-        return true;
-    }
-
     public static List<Account> getAccountList() {
         return accountList;
     }

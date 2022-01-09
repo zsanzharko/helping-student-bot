@@ -54,4 +54,22 @@ public class SendMessages {
         markup.setKeyboard(rowList);
         return markup;
     }
+
+    public static InlineKeyboardMarkup one_row_markup(List<String> texts, List<String> callback_data) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+
+        if (texts.size() != callback_data.size()) return new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        for (int i = 0; i < texts.size(); i++) {
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            InlineKeyboardButton button = new InlineKeyboardButton();
+            button.setText(texts.get(i));
+            button.setCallbackData(callback_data.get(i));
+            row.add(button);
+            rowList.add(row);
+        }
+        markup.setKeyboard(rowList);
+
+        return markup;
+    }
 }
