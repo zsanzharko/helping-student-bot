@@ -96,7 +96,7 @@ public final class Account {
     }
 
     public static String getAccountInformation(Account account) {
-        if (binary_search(Account.getAccountList(), account.getID()) == -1) {
+        if (binary_search(account.getID()) == -1) {
             //todo notify admin to problem
             return """
                     Sorry, we didn't find your account :(
@@ -115,12 +115,12 @@ public final class Account {
                 "Payment card:\t" + account.getUser().getPayment();
     }
 
-    public static int binary_search(List<Account> accounts, Long ID) {
+    public static int binary_search(Long ID) {
         int low = 0;
-        int high = accounts.size() - 1;
+        int high = Account.accountList.size() - 1;
         while (low <= high) {
             int mid = (low + high) / 2;
-            Long guess = accounts.get(mid).getID();
+            Long guess = Account.accountList.get(mid).getID();
             if (Objects.equals(guess, ID)) {
                 return mid;
             } if (guess > ID) {

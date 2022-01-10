@@ -74,7 +74,7 @@ public class User {
         StringBuilder connectionList = new StringBuilder("Your connections:\n");
         for (int i = 0; i < connectionAccountList.size(); i++) {
             Long connection = connectionAccountList.get(i);
-            int indexAccount = Account.binary_search(Account.getAccountList(), connection);
+            int indexAccount = Account.binary_search(connection);
             if (indexAccount != -1) {
                 connectionList.append(i + 1).append(". ").append(
                         Account.getAccountList().get(indexAccount).getUser().getFakeUsername());
@@ -95,7 +95,7 @@ public class User {
 
         for (Long aLong : connectionAccountList) {
             Account account = Account.getAccountList().get(
-                    Account.binary_search(Account.getAccountList(), aLong));
+                    Account.binary_search(aLong));
             connections.add(account.getID() + "|" + account.getUser().getFakeUsername());
         }
         return connections;
@@ -155,7 +155,7 @@ public class User {
      * @return if connection stay current
      */
     public final boolean connectTo(Long id) {
-        int index = Account.binary_search(Account.getAccountList(), id);
+        int index = Account.binary_search(id);
         if (index == -1) return false;
         currentConnection = Account.getAccountList().get(index).getID();
         return true;
@@ -168,7 +168,7 @@ public class User {
      */
     public final boolean removeConnection(Long id) {
         // todo check this
-        int index = Account.binary_search(Account.getAccountList(), id);
+        int index = Account.binary_search(id);
         if (index == -1) return false;
         currentConnection = null;
         return true;

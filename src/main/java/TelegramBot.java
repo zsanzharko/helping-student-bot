@@ -46,7 +46,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     Authorization.authLogPerson(ID, CHAT_ID, username, first_name, last_name);
                     return;
                 } else {
-                    int index = Account.binary_search(Account.getAccountList(), ID);
+                    int index = Account.binary_search(ID);
                     if (index != -1)
                         account = Account.getAccountList().get(index);
                     else {
@@ -161,7 +161,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             final String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
             final Long ID = update.getCallbackQuery().getFrom().getId();
             final String callbackData = update.getCallbackQuery().getData();
-            int indexAccount = Account.binary_search(Account.getAccountList(), ID);
+            int indexAccount = Account.binary_search(ID);
             if (indexAccount == -1) return;
             account = Account.getAccountList().get(indexAccount);
 
@@ -281,7 +281,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                     // We check if id have in account list. Otherwise, we send fail removing
                     // todo if account in offline, maybe it can check in database
-                    if (Account.binary_search(Account.getAccountList(), account.getUser().getCurrentConnection()) == -1) {
+                    if (Account.binary_search(account.getUser().getCurrentConnection()) == -1) {
                         remove_connect_message.setText("""
                                 Remove connection is 🥵 FAIL 🥵
                                 Sorry about that, I send the problem to admin
