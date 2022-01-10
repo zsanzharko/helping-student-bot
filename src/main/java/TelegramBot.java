@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TelegramBot extends TelegramLongPollingBot {
@@ -100,7 +101,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                                             List.of(new String[]{"Edit", "Remove Message"}),
                                             List.of(new String[]{"/edit_account", "/remove_edit_account_message"})));
                             try {
-                                //todo save id message when user want to delete message
+                                //todo save id message when user want to delete;
+                                // you can check MessageAutoDeleteTimerChanged class
+                                // and use this
                                 execute(accountInformationMessage);
                             } catch (TelegramApiException e) {
                                 e.printStackTrace();
@@ -136,8 +139,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             }
                         }
                     }
-                }
-                else if (account.getActivity().getLatestMessage() != null) {
+                } else if (account.getActivity().getLatestMessage() != null) {
                     // we're checking the latest message to first character like "/"
                     // and if it is true, we change in account
                     if (account.getActivity().getLatestMessage().getText().charAt(0) == '/') {
@@ -173,8 +175,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     account.getActivity().setLatestMessage(null);
                 }
             }
-        }
-        else if (update.hasCallbackQuery()) {
+        } else if (update.hasCallbackQuery()) {
             final String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
             final Long ID = update.getCallbackQuery().getFrom().getId();
             final String callbackData = update.getCallbackQuery().getData();
@@ -202,6 +203,48 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
+                return;
+            } else {
+                // next step we're parsing id in callback data
+                // second step we will define the command and do something about this
+                Long idUser = Long.parseLong(callbackData.substring(callbackData.indexOf("&id=") + 5));
+                if (callbackData.contains("/connect_to_")) {
+                    //todo check correct parsing
+                    if (!account.getUser().connectTo(idUser)) {
+                        SendMessage wrong_connection = new SendMessage();
+                        wrong_connection.setChatId(chatId);
+                        wrong_connection.setChatId("""
+                                Wrong connection
+                                Sorry about that, I send the problem to admin
+                                Wait...""");
+                        //todo check latest connection or messages
+
+                        try {
+                            execute(wrong_connection);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    SendMessage correct_connection = new SendMessage();
+                    correct_connection.setChatId(chatId);
+                    correct_connection.setText("""
+                            Awesome, I connected user with you!
+                            If you want to stop conversation send to message "Stop connection" or press to button
+                            Good luck!""");
+                    try {
+                        execute(correct_connection);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    // We don't have to check callback data again
+                    return;
+                } else if (callbackData.contains("/remove_connect_")) {
+                    if (!account.getUser().removeConnection(idUser)){
+                        SendMessage wrong_remove = new SendMessage();
+                        wrong_remove.setChatId(chatId);
+
+                    }
+                }
             }
 
             switch (callbackData) {
@@ -213,15 +256,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                     editToolMessage.setReplyMarkup(
                             SendMessages.two_columns_markup(
                                     List.of(new String[]{
-                                            "Fake Username",
-                                            "Payment Card",
-                                            "Name",
-                                            "Surname",
-                                            "Birthday",
-                                            "Phone Number",
-                                            "Email",
-                                            "Student ID"
-                                    }),
+                                            "Fake Username", "Payment Card",
+                                            "Name", "Surname", "Birthday",
+                                            "Phone Number", "Email", "Student ID"}),
                                     List.of(new String[]{
                                             "/edit_account_fake_username",
                                             "/edit_account_payment_card",
@@ -240,14 +277,47 @@ public class TelegramBot extends TelegramLongPollingBot {
                         e.printStackTrace();
                     }
                 }
-                //Remove message about account, because it's policy agreement
-                case "/remove_edit_account_message" -> {
-                }
                 //Main User connect to other User, with id
                 case "/connect_to" -> {
+                    SendMessage connect_to_message = new SendMessage();
+                    connect_to_message.setChatId(chatId);
+                    connect_to_message.setText("Please, enter connection");
+
+                    List<String> fakeUsernames = new ArrayList<>();
+                    List<String> callback_idUsers = new ArrayList<>();
+
+                    for (String result : account.getUser().getConnectionAccountList()) {
+                        fakeUsernames.add(result.substring(result.indexOf('|') + 1));
+                        callback_idUsers.add("/connect_to&id=" + result.substring(0, result.indexOf('|')));
+                    }
+                    connect_to_message.setReplyMarkup(SendMessages.one_row_markup(
+                            fakeUsernames,
+                            callback_idUsers));
+
+                    try {
+                        execute(connect_to_message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
                 }
                 //Remove connection in Main User, but not to other User
                 case "/remove_connect" -> {
+                    SendMessage remove_connect_message =
+                            new SendMessage(chatId, "Remove connection is finished successful");
+
+                    // We check if id have in account list. Otherwise, we send fail removing
+                    // todo if account in offline, maybe it can check in database
+                    if (Account.binary_search(Account.getAccountList(), account.getUser().getCurrentConnection()) == -1) {
+                        remove_connect_message.setText("""
+                                Remove connection is 🥵 FAIL 🥵
+                                Sorry about that, I send the problem to admin
+                                Wait...""");
+                    }
+                    try {
+                        execute(remove_connect_message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
                 }
                 // View all helping posts
                 case "/view_posts" -> {

@@ -29,6 +29,7 @@ public class User {
 
     private String fakeUsername;
     private List<Long> connectionAccountList = new ArrayList<>();   // His connect with other students
+    private Long currentConnection;
 
     public User() {
     }
@@ -40,7 +41,7 @@ public class User {
 
     public User(boolean isActive, String name, String surname, LocalDate birthday,
                 String numberPhone, String email, Payment payment, String studentID,
-                String fakeUsername, List<Long> connectionAccountList) {
+                String fakeUsername, List<Long> connectionAccountList, Long currentConnection) {
         this.isActive = isActive;
         this.name = name;
         this.surname = surname;
@@ -51,6 +52,7 @@ public class User {
         this.studentID = studentID;
         this.fakeUsername = fakeUsername;
         this.connectionAccountList = connectionAccountList;
+        this.currentConnection = currentConnection;
     }
 
     public static boolean studentIDChecking(String studentID) {
@@ -86,6 +88,17 @@ public class User {
             if (i != connectionAccountList.size() - 1) connectionList.append("\n");
         }
         return connectionList.toString();
+    }
+
+    public final List<String> getConnectionAccountList() {
+        List<String> connections = new ArrayList<>();
+
+        for (Long aLong : connectionAccountList) {
+            Account account = Account.getAccountList().get(
+                    Account.binary_search(Account.getAccountList(), aLong));
+            connections.add(account.getID() + "|" + account.getUser().getFakeUsername());
+        }
+        return connections;
     }
 
     public boolean setInfoEdit(String command, String item) {
@@ -132,6 +145,32 @@ public class User {
                 fakeUsername = item;
             }
         }
+        return true;
+    }
+
+    /**
+     * Connected when id will stay in database
+     *
+     * @param id user wanted to connect to this telegram id
+     * @return if connection stay current
+     */
+    public final boolean connectTo(Long id) {
+        int index = Account.binary_search(Account.getAccountList(), id);
+        if (index == -1) return false;
+        currentConnection = Account.getAccountList().get(index).getID();
+        return true;
+    }
+
+    /**
+     * Remove connection with other user
+     *
+     * @return when current connection will stay null
+     */
+    public final boolean removeConnection(Long id) {
+        // todo check this
+        int index = Account.binary_search(Account.getAccountList(), id);
+        if (index == -1) return false;
+        currentConnection = null;
         return true;
     }
 }
