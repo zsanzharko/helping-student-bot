@@ -50,9 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     if (index != -1)
                         account = Account.getAccountList().get(index);
                     else {
-                        SendMessage auth_not_found = new SendMessage();
-                        auth_not_found.setText("Account not authorized");
-                        auth_not_found.setChatId(CHAT_ID);
+                        SendMessage auth_not_found = new SendMessage(CHAT_ID, "Account not authorized");
                         try {
                             execute(auth_not_found);
                         } catch (TelegramApiException e) {
@@ -71,19 +69,17 @@ public class TelegramBot extends TelegramLongPollingBot {
                             Account.getAccountList().remove(account);
                         }
                         case "/information" -> {
-                            SendMessage information_message = new SendMessage();
-                            information_message.setChatId(CHAT_ID);
-                            information_message.setText("""
-                                    Привет! Я бот в котором ты сможешь почуствовать себя анонимом среди университетов
-                                    В мои обязанности входит исключительная безопастность и сокрытие данных от третьих
-                                    лиц. На данный момент доступны функции:
-                                        /start - данные начинают собираться (в целях автоматизировать ecosystem'у ботов)
-                                        /stop - данные удаляются из активных участников (остаються в базе данных до окончания вашей учебы) \s
-                                        /information - предоставляет возможности бота, о которых вы могли бы забыть\s
-                                        /getconnection - показывает подключение между студентов без личных информаций
-                                        /helpers - просмотр постов помощи
-                                        /account
-                                    """);
+                            SendMessage information_message =
+                                    new SendMessage(CHAT_ID, """
+                                            Привет! Я бот в котором ты сможешь почуствовать себя анонимом среди университетов
+                                            В мои обязанности входит исключительная безопастность и сокрытие данных от третьих
+                                            лиц. На данный момент доступны функции:
+                                                /start - данные начинают собираться (в целях автоматизировать ecosystem'у ботов)
+                                                /stop - данные удаляются из активных участников (остаються в базе данных до окончания вашей учебы) \s
+                                                /information - предоставляет возможности бота, о которых вы могли бы забыть\s
+                                                /getconnection - показывает подключение между студентов без личных информаций
+                                                /helpers - просмотр постов помощи
+                                                /account - просмотр профиля, и его настройка""");
                             try {
                                 execute(information_message);
                             } catch (TelegramApiException e) {
@@ -91,11 +87,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                             }
                         }
                         case "/account" -> {
-                            SendMessage accountInformationMessage = new SendMessage();
-                            accountInformationMessage.setChatId(CHAT_ID);
-                            accountInformationMessage.setText(
-                                    Account.getAccountInformation(account)
-                            );
+                            SendMessage accountInformationMessage =
+                                    new SendMessage(CHAT_ID, Account.getAccountInformation(account));
                             accountInformationMessage.setReplyMarkup(
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Edit", "Remove Message"}),
@@ -111,9 +104,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         }
                         case "/getconnection" -> {
                             final String connectionInformation = account.getUser().getConnectionAccountListInformation();
-                            SendMessage informationConnectionMessage = new SendMessage();
-                            informationConnectionMessage.setText(connectionInformation);
-                            informationConnectionMessage.setChatId(CHAT_ID);
+                            SendMessage informationConnectionMessage = new SendMessage(CHAT_ID, connectionInformation);
                             informationConnectionMessage.setReplyMarkup(
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Connect to", "Remove connect"}),
@@ -123,9 +114,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             String text = """
                                     What u are want to do?
                                     """;
-                            SendMessage help_choice_message = new SendMessage();
-                            help_choice_message.setText(text);
-                            help_choice_message.setChatId(CHAT_ID);
+                            SendMessage help_choice_message = new SendMessage(CHAT_ID, text);
                             help_choice_message.setReplyMarkup(
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Create", "Remove", "View Post"}),
@@ -151,11 +140,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                                 //if user will wrong give answer, we send a message with text
                                 //At this moment we don't set to The Latest Message, cause all edit, will function
                                 //not buttons
-                                SendMessage warning_message = new SendMessage();
-                                warning_message.setChatId(CHAT_ID);
-                                warning_message.setText("Please try again");
-
-                                execute(warning_message);
+                                execute(new SendMessage(CHAT_ID, "Please try again"));
                                 return; // we didn't have to set the latest message to null
                             } catch (TelegramApiException e) {
                                 e.printStackTrace();
@@ -163,10 +148,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                         } else {
                             //when user give answer bot otherwise send message that will show the account
                             try {
-                                SendMessage updating_message = new SendMessage();
-                                updating_message.setChatId(CHAT_ID);
-                                updating_message.setText(account.getInformationAccount());
-                                execute(updating_message);
+                                execute(new SendMessage(CHAT_ID, account.getInformationAccount()));
                             } catch (TelegramApiException e) {
                                 e.printStackTrace();
                             }
@@ -184,13 +166,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             account = Account.getAccountList().get(indexAccount);
 
             if (callbackData.contains("/edit_account_")) {
-                SendMessage edit_message = new SendMessage();
                 //todo check this
-                edit_message.setText("Please, enter your " + callbackData
-                        .replaceAll("_", " ")
-                        .substring(callbackData.lastIndexOf('_') + 1));
-                edit_message.setChatId(chatId);
-
+                SendMessage edit_message = new SendMessage(chatId,
+                        "Please, enter your " + callbackData
+                                .replaceAll("_", " ")
+                                .substring(callbackData.lastIndexOf('_') + 1));
                 try {
                     // first we usually send the message next step, we change text to callback
                     // and when we get message like about name, we will check latest saved Message
@@ -211,12 +191,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 if (callbackData.contains("/connect_to_")) {
                     //todo check correct parsing
                     if (!account.getUser().connectTo(idUser)) {
-                        SendMessage wrong_connection = new SendMessage();
-                        wrong_connection.setChatId(chatId);
-                        wrong_connection.setChatId("""
-                                Wrong connection
-                                Sorry about that, I send the problem to admin
-                                Wait...""");
+                        SendMessage wrong_connection = new SendMessage(chatId,
+                                """
+                                        Wrong connection
+                                        Sorry about that, I send the problem to admin
+                                        Wait...""");
                         //todo check latest connection or messages
 
                         try {
@@ -225,12 +204,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                             e.printStackTrace();
                         }
                     }
-                    SendMessage correct_connection = new SendMessage();
-                    correct_connection.setChatId(chatId);
-                    correct_connection.setText("""
-                            Awesome, I connected user with you!
-                            If you want to stop conversation send to message "Stop connection" or press to button
-                            Good luck!""");
+                    SendMessage correct_connection = new SendMessage(chatId,
+                            """
+                                    Awesome, I connected user with you!
+                                    If you want to stop conversation send to message "Stop connection" or press to button
+                                    Good luck!""");
                     try {
                         execute(correct_connection);
                     } catch (TelegramApiException e) {
@@ -239,7 +217,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     // We don't have to check callback data again
                     return;
                 } else if (callbackData.contains("/remove_connect_")) {
-                    if (!account.getUser().removeConnection(idUser)){
+                    if (!account.getUser().removeConnection(idUser)) {
                         SendMessage wrong_remove = new SendMessage();
                         wrong_remove.setChatId(chatId);
 
@@ -250,9 +228,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             switch (callbackData) {
                 //Edit some in account
                 case "/edit_account" -> {
-                    SendMessage editToolMessage = new SendMessage();
-                    editToolMessage.setChatId(chatId);
-                    editToolMessage.setText("We change a ...");
+                    SendMessage editToolMessage = new SendMessage(chatId, "We change a ...");
                     editToolMessage.setReplyMarkup(
                             SendMessages.two_columns_markup(
                                     List.of(new String[]{
@@ -279,9 +255,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
                 //Main User connect to other User, with id
                 case "/connect_to" -> {
-                    SendMessage connect_to_message = new SendMessage();
-                    connect_to_message.setChatId(chatId);
-                    connect_to_message.setText("Please, enter connection");
+                    SendMessage connect_to_message = new SendMessage(chatId, "Please, enter connection");
 
                     List<String> fakeUsernames = new ArrayList<>();
                     List<String> callback_idUsers = new ArrayList<>();
