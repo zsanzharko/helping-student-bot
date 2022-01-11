@@ -13,13 +13,12 @@ import java.util.List;
 public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
-        return System.getenv("SDU_Helping_Student_Bot").substring(';' + 1);
+        return "test_helping_student_bot";
     }
 
     @Override
     public String getBotToken() {
-        return System.getenv("SDU_Helping_Student_Bot")
-                .substring(0, System.getenv("SDU_Helping_Student_Bot").indexOf(';'));
+        return System.getenv("test_helping_student_bot");
     }
 
     @Override
@@ -91,10 +90,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case "/account" -> {
                             SendMessage accountInformationMessage =
                                     new SendMessage(CHAT_ID, Account.getAccountInformation(account));
+                            accountInformationMessage.enableMarkdownV2(true);
                             accountInformationMessage.setReplyMarkup(
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Edit", "Remove Message"}),
-                                            List.of(new String[]{"/edit_account", "/remove_edit_account_message"})));
+                                            List.of(new String[]{"/edit_account_", "/remove_edit_account_message"})));
                             try {
                                 //todo save id message when user want to delete;
                                 // you can check MessageAutoDeleteTimerChanged class
@@ -107,10 +107,20 @@ public class TelegramBot extends TelegramLongPollingBot {
                         case "/getconnection" -> {
                             final String connectionInformation = account.getUser().getConnectionAccountListInformation();
                             SendMessage informationConnectionMessage = new SendMessage(CHAT_ID, connectionInformation);
-                            informationConnectionMessage.setReplyMarkup(
+                            if (account.getUser().getConnectionAccountList().size() == 0) {
+                                informationConnectionMessage.setReplyMarkup(
+                                        SendMessages.one_row_markup(
+                                                List.of(new String[]{"Open Help Posts"}),
+                                                List.of(new String[]{"/view_posts"})));
+                            } else informationConnectionMessage.setReplyMarkup(
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Connect to", "Remove connect"}),
                                             List.of(new String[]{"/connect_to", "/remove_connect"})));
+                            try {
+                                execute(informationConnectionMessage);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         }
                         case "/helpers" -> {
                             String text = """
@@ -121,8 +131,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                                     SendMessages.two_columns_markup(
                                             List.of(new String[]{"Create", "Remove", "View Post"}),
                                             List.of(new String[]{"/create_post", "/remove_posts", "/view_posts"})
-                                    )
-                            );
+                                    ));
                             try {
                                 execute(help_choice_message);
                             } catch (TelegramApiException e) {

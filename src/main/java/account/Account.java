@@ -9,16 +9,13 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @apiNote
- * Class Account creates. It will connect with database and other bots to realizing(ecosystem)
+ * @author Sanzhar Zhanibekov
+ * @version 1.0
+ * @apiNote Class Account creates. It will connect with database and other bots to realizing(ecosystem)
  * Account is main class, with all information about user and personal information;
  * Class give information to work in bots.
  * {@link #chatId} chat id in Telegram
  * {@link #activity} gives latest activity in telegram Bot
- *
- *
- * @version 1.0
- * @author Sanzhar Zhanibekov
  */
 
 @Data
@@ -105,14 +102,18 @@ public final class Account {
         }
 
         return "Account:\n\n" +
-                "Status: " + account.getUser().isActive() + "\n" +
-                "Fake username:\t" + account.getUser().getFakeUsername() + "\n" +
+                "Status: " + (account.getUser().isActive() ? "Online🟢" : "Offline🔴") + "\n" +
+                "Fake username:\t" + (account.getUser().getFakeUsername().isEmpty()) + "\n" +
                 "Name:\t" + "fake username: " + account.getUser().getName() + "\n" +
-                "Surname:\t" + account.getUser().getSurname() + "\n" +
-                "Birthday:\t" + account.getUser().getBirthday() + "\n" +
-                "Phone number:\t" + account.getUser().getNumberPhone() + "\n" +
+                "Surname:\t" + (account.getUser().getSurname().isEmpty() ?
+                "not set" : account.getUser().getSurname()) + "\n" +
+                "Birthday:\t" + (account.getUser().getBirthday() == null ?
+                "not set" : account.getUser().getBirthday()) + "\n" +
+                "Phone number:\t" + (account.getUser().getNumberPhone().isEmpty() ?
+                "not set" : account.getUser().getNumberPhone()) + "\n" +
                 "Email:\t" + account.getUser().getEmail() + "\n" +
-                "Payment card:\t" + account.getUser().getPayment();
+                "Payment card:\t" + (account.getUser().getPayment().getCard().isEmpty() ?
+                "not added" : "||" + account.getUser().getPayment().getCard() + "||");
     }
 
     public static int binary_search(Long ID) {
@@ -123,7 +124,8 @@ public final class Account {
             Long guess = Account.accountList.get(mid).getID();
             if (Objects.equals(guess, ID)) {
                 return mid;
-            } if (guess > ID) {
+            }
+            if (guess > ID) {
                 high = mid - 1;
             } else low = mid + 1;
         }
