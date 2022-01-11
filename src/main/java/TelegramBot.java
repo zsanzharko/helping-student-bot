@@ -1,7 +1,9 @@
 import account.Account;
 import auth.Authorization;
+import helpingpost.HelpPost;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.*;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -295,6 +297,45 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
                 // View all helping posts
                 case "/view_posts" -> {
+                    //todo maybe delete all latest messages like a new list
+                    int random_index_post = (int)(Math.random() * HelpPost.getHelp_post_list().size());
+                    int zone = 3;
+                    for (int index = random_index_post, count = 1; index < zone; index++, count++) {
+                        HelpPost helpPost = HelpPost.getHelp_post_list().get(index);
+                        String post = helpPost.getInformationToString();
+                        if (helpPost.isPhotoMessagePost()) {
+                            List<InputFile> inputFiles = new ArrayList<>();
+                            post = post.substring(post.indexOf('(') + 1);
+                            do {
+                                inputFiles.add(new InputFile(
+                                        post.substring(0, post.indexOf('|'))));
+                                //check method in HelpPost getInformationToString
+                                // it is so bad
+                                post = post.substring(post.indexOf('|') + 1);
+                            } while (post.charAt(0) != ')');
+                            post = post.substring(post.indexOf(')') + 1);
+                            //fixme check documentation about input files and multiple photos
+                            SendPhoto send_post = new SendPhoto(chatId, inputFiles.get(0));
+                            send_post.setCaption(post);
+                            if (count != zone) {
+                                send_post.setReplyMarkup(SendMessages.one_row_markup(
+                                        List.of(new String[]{"Apply"}),
+                                        List.of(new String[]{
+                                                "/post_apply&idPost=" + helpPost.getIdPost() +
+                                                        "&newIdWatcher=" + account.getID()})));
+                            } else {
+                                send_post.setReplyMarkup(SendMessages.two_columns_markup(
+                                        List.of(new String[]{"Apply", "◀️", "▶️"}),
+                                        List.of(new String[]{
+                                                "/post_apply&idPost=" + helpPost.getIdPost() +
+                                                        "&newIdWatcher=" + account.getID(),
+                                                "/post_back&index=" + (random_index_post - zone),
+                                                "/post_next&index=" + (random_index_post + zone)
+                                        })));
+                            }
+
+                        }
+                    }
                 }
                 // Remove post in self, checking if user will do assigment
                 case "/remove_posts" -> {
