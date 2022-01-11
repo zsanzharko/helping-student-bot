@@ -10,14 +10,14 @@ import java.util.Objects;
 public class Authorization {
 
     public static void authLogPerson(Long ID, String chatId, String username, String name, String surname) {
-        int index = Account.binary_search(Account.getAccountList(), ID);    //find the index
+        int index = Account.binary_search(ID);    //find the index
         if (index == -1)
             addAccount(new Account(ID, chatId, username, name, surname));   // if we not found index in array, we add new Account
         else Account.getAccountList().get(Account.getAccountList().size() - 1).getUser().setActive(true);
     }
 
     public static Account authLogPerson(Long ID, String chatId) {
-        int index = Account.binary_search(Account.getAccountList(), ID);
+        int index = Account.binary_search(ID);
         if (index != -1)
             return Account.getAccountList().get(index);
         addAccount(new Account(ID, chatId));
@@ -26,7 +26,7 @@ public class Authorization {
 
     public static void authLogPerson(Long ID, String chatId, String username,
                                      ChatLocation chatLocation, String name, String surname) {
-        int index = Account.binary_search(Account.getAccountList(), ID);
+        int index = Account.binary_search(ID);
         if (index != -1)
             return;
         Account.getAccountList().add(new Account(ID, chatId, username, chatLocation, name, surname));
